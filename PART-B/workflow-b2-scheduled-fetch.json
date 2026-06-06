@@ -1,0 +1,156 @@
+{
+  "name": "B2 - Scheduled Data Fetch Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "bbf44bf5-3d2d-4723-8432-94fe69d0a534",
+      "name": "Daily 9AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://universities.hipolabs.com/search?country=United+Kingdom",
+        "options": {}
+      },
+      "id": "d7815723-1fb1-46bb-bde4-b61034141ca2",
+      "name": "Fetch Universities API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\nconst universities = items.map(item => item.json);\n\n// Filter: only universities with web pages and keep first 20\nconst filtered = universities\n  .filter(u => u.web_pages && u.web_pages.length > 0)\n  .slice(0, 20);\n\nreturn filtered.map(u => ({\n  json: {\n    name: u.name,\n    country: u.country,\n    state: u['state-province'] || 'N/A',\n    domain: u.domains ? u.domains[0] : 'N/A',\n    website: u.web_pages ? u.web_pages[0] : 'N/A',\n    alphaTwoCode: u.alpha_two_code\n  }\n}));\n      "
+      },
+      "id": "260f88fb-1b53-47b7-94c3-b65580ed9202",
+      "name": "Filter & Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "o1",
+              "name": "fetchedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "o2",
+              "name": "source",
+              "value": "Hipolabs Universities API",
+              "type": "string"
+            },
+            {
+              "id": "o3",
+              "name": "universityName",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "o4",
+              "name": "country",
+              "value": "={{ $json.country }}",
+              "type": "string"
+            },
+            {
+              "id": "o5",
+              "name": "website",
+              "value": "={{ $json.website }}",
+              "type": "string"
+            },
+            {
+              "id": "o6",
+              "name": "domain",
+              "value": "={{ $json.domain }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "b8f66634-88e1-418e-91ee-c7089a79d083",
+      "name": "Clean Labelled Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily 9AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Universities API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Universities API": {
+      "main": [
+        [
+          {
+            "node": "Filter & Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Transform": {
+      "main": [
+        [
+          {
+            "node": "Clean Labelled Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "bb653a3f-5e58-48f6-a307-00bc76cba384",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "d1bc8a0c76a2bf66392ee7e56426bf25ec803b85803413fcb940d8c9879182f1"
+  },
+  "nodeGroups": [],
+  "id": "xLzmY8Bp67rBP47n",
+  "tags": []
+}
