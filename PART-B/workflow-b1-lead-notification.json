@@ -1,0 +1,208 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "courseLevel",
+              "value": "={{ $json.body.courseLevel }}",
+              "type": "string"
+            },
+            {
+              "id": "f4",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "f5",
+              "name": "country",
+              "value": "={{ $json.body.country }}",
+              "type": "string"
+            },
+            {
+              "id": "f6",
+              "name": "university",
+              "value": "={{ $json.body.university }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2832f933-fcf8-42c2-8c0c-04df095f014d",
+      "name": "Extract Lead Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.courseLevel }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "PG"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "488ce5d7-36a1-4f07-a0a7-b72a405cfad7",
+      "name": "PG or PhD?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "n1",
+              "name": "notification",
+              "value": "={{ \"HIGH PRIORITY: \" + $json.courseLevel + \" lead from \" + $json.name + \" (\" + $json.email + \")\" }}",
+              "type": "string"
+            },
+            {
+              "id": "n2",
+              "name": "action",
+              "value": "email_or_slack_notification",
+              "type": "string"
+            },
+            {
+              "id": "n3",
+              "name": "priority",
+              "value": "high",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5a008c12-1ec4-40da-8dd3-885db6c7e8f3",
+      "name": "Notify - PG/PhD Lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -256
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f9cc73db-83b6-4c92-9806-f5d62fa6d071",
+      "name": "Log to Google Sheet (No-Op Mock)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        640,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "options": {}
+      },
+      "id": "23e760ba-28c7-4449-9566-9234dc9a7238",
+      "name": "Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        -144
+      ],
+      "webhookId": "13b6c3cc-0508-499e-bad6-6ff9d7800eaf"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract Lead Fields": {
+      "main": [
+        [
+          {
+            "node": "PG or PhD?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG or PhD?": {
+      "main": [
+        [
+          {
+            "node": "Notify - PG/PhD Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log to Google Sheet (No-Op Mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Lead Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4bafdbcb-786f-4953-b4c1-e37b4921c2a4",
+  "meta": {
+    "instanceId": "7c5870dffdfa17cf6a9ec1be7764282551609d272b5400ef829d6d889a1098e2"
+  },
+  "nodeGroups": [],
+  "id": "2MXT01djyASznHhq",
+  "tags": []
+}
